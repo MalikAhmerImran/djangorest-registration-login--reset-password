@@ -2,7 +2,6 @@ from django.core.mail import  EmailMessage,send_mail
 import os
 import random
 from accounts.models import User
-
 class Util:
     @staticmethod
     def send_email(data):
@@ -22,3 +21,14 @@ def  email_otp_verifcation(email):
         user_obj=User.objects.get(email=email)
         user_obj.otp=otp
         user_obj.save()
+def  password_reset_otp(email):
+        subject='OTP For  Password Reset'
+        otp=random.randint(100000,999999)
+        message=f'your otp is {otp}'
+        email_from='malikracco1234@gmail.com'
+        send_mail(subject,message,email_from,[email])
+        user_obj=User.objects.get(email=email)
+        user_obj.otp=otp
+        user_obj.save()
+        
+       
