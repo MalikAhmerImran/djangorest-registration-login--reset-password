@@ -1,5 +1,5 @@
 from django.contrib import admin
-from accounts.models import User
+from accounts.models import User,Store,Information
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 # Register your models here.
@@ -13,7 +13,7 @@ class UserModelAdmin(BaseUserAdmin):
     list_display = ['id',"username", "email", "is_admin","is_verified"]
     list_filter = ["is_admin"]
     fieldsets = [
-        ('User Credentials', {"fields": ["email",'password']}),
+        ('User Credentials', {"fields": ["email",'password','is_active']}),
         ("Personal info", {"fields": ["username",'is_verified']}),
         ("Permissions", {"fields": ["is_admin"]}),
     ]
@@ -33,5 +33,10 @@ class UserModelAdmin(BaseUserAdmin):
     filter_horizontal = []
 
 
-# Now register the new UserAdmin...
+
+     
+
+
 admin.site.register(User, UserModelAdmin)    
+admin.site.register(Store)
+admin.site.register(Information)

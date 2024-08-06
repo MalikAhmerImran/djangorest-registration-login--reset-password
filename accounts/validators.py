@@ -1,7 +1,7 @@
 import re
 from django.core.exceptions import ValidationError
 class UppercaseValidator:
-    def validate(self, password, user=None):
+    def validate(self,password, user=None):
         if not re.findall('[A-Z]', password):
             raise ValidationError(
                 ("The password must contain at least 1 uppercase letter, A-Z."),

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.response import Response 
-from accounts.models import User
+from accounts.models import User,Store,Information
 from django.contrib.auth.password_validation  import validate_password
 from django.core.exceptions import ValidationError
 from accounts.utils import Util
@@ -39,7 +39,6 @@ class UserPasswordResetUpdateserializer(serializers.Serializer):
       password=serializers.CharField(max_length=50,style={'input_type':'password'},write_only=True)
       password2=serializers.CharField(max_length=50,style={'input_type':'password'},write_only=True)
       otp=serializers.CharField()
-     
       class Meta:
         model=User
         fields=['otp','password','password2']
@@ -48,6 +47,14 @@ class   UserVerifyEmailSerializer(serializers.Serializer):
     otp=serializers.CharField()   
 class  ResendOtpSerializer(serializers.Serializer):
     email=serializers.CharField()
-     
+    
+class ChangePasswordSerializer(serializers.Serializer):
+        email=serializers.CharField()
+        old_password=serializers.CharField(max_length=50,style={'input_type':'password'},write_only=True)
+        new_password=serializers.CharField(max_length=50,style={'input_type':'password'},write_only=True)
 
-   
+class InformationSerializer(serializers.Serializer):
+    email=serializers.CharField()
+    class  Meta:
+        model=Information
+        fields="__all__"
