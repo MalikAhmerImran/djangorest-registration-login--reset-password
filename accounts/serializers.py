@@ -1,14 +1,17 @@
 from rest_framework import serializers
 from rest_framework.response import Response 
-from accounts.models import User,Store,Information
+from accounts.models import User,Product
 from django.contrib.auth.password_validation  import validate_password
 from django.core.exceptions import ValidationError
 from accounts.utils import Util
 class UserRegistrationSerializer(serializers.ModelSerializer):
+    products=serializers.PrimaryKeyRelatedField(many=True,queryset=Product.objects.all())
+
     password2=serializers.CharField(style={'input_type':'password'},write_only=True)
+    is_owner=serializers.BooleanField()
     class Meta:
         model=User
-        fields='__all__'
+        fields=['username','email','password','is_owner','password2','products']
         extra_kwargs={
             'password':{'write_only':True}
         }
@@ -20,11 +23,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Password and confirm password didnot match   ")
         return attrs    
     def create(self, validated_data):
+        print(validated_data)
         try:
             validate_password(password=validated_data['password'])
         except ValidationError as err:
             raise serializers.ValidationError({"password":err.messages})    
-        return User.objects.create_user(**validated_data)
+        username=validated_data['username']
+        email=validated_data['email']
+        password=validated_data['password']
+        is_owner=validated_data['is_owner']
+        return User.objects.create_user(username=username,email=email,password=password,is_owner=is_owner)
 class UserLoginSerializer(serializers.ModelSerializer):
     email=serializers.EmailField(max_length=50)
     class Meta:
@@ -53,8 +61,10 @@ class ChangePasswordSerializer(serializers.Serializer):
         old_password=serializers.CharField(max_length=50,style={'input_type':'password'},write_only=True)
         new_password=serializers.CharField(max_length=50,style={'input_type':'password'},write_only=True)
 
-class InformationSerializer(serializers.Serializer):
-    email=serializers.CharField()
-    class  Meta:
-        model=Information
-        fields="__all__"
+class ProductSerializer(serializers.ModelSerializer):
+           user = serializers.ReadOnlyField(source='user.username')
+           
+
+           class Meta:
+                model=Product
+                fields=['id','product_name','product_price','user']

@@ -1,15 +1,26 @@
 from django.shortcuts import render
 from rest_framework.response import Response
+from rest_framework import generics
 from rest_framework import status
 from rest_framework.views import APIView
-from accounts.serializers import ChangePasswordSerializer,ResendOtpSerializer,UserRegistrationSerializer,UserLoginSerializer,UserPasswordResetSerailizer,UserPasswordResetUpdateserializer,UserVerifyEmailSerializer,InformationSerializer
+from accounts.serializers import (ChangePasswordSerializer,
+                                  ResendOtpSerializer,
+                                  UserRegistrationSerializer,
+                                  UserLoginSerializer,
+                                  UserPasswordResetSerailizer,
+                                  UserPasswordResetUpdateserializer,
+                                  UserVerifyEmailSerializer,
+                                  ProductSerializer)
 from django.contrib.auth import authenticate
+from rest_framework import mixins
 import logging
-from accounts.models import Information
 from accounts.utils import *
 from accounts.tokens import get_tokens_for_user
 from django.contrib.auth.password_validation  import validate_password
 from django.core.exceptions  import ValidationError
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication 
+from accounts.models import Product
 # Create your views here.
 
 
@@ -24,6 +35,7 @@ class UserRegistrationView(APIView):
     
 
 class UserLoginView(APIView):
+   
     def post(self, request, format=None):
         data=request.data
         serializer = UserLoginSerializer(data=data)
@@ -143,40 +155,72 @@ class ChangePasswordView(APIView):
               print(user.password)
               return Response({'msg':'password change successfully'},status=status.HTTP_200_OK)
          return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProductListView(generics.ListCreateAPIView):
+        authentication_classes=[JWTAuthentication]
+        permission_classes=[IsAuthenticated]
+        queryset=Product.objects.all()
+        serializer_class=ProductSerializer 
+        def perform_create(self, serializer):
+             serializer.save(user=self.request.user)
+
+      
+class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
+     authentication_classes=[JWTAuthentication]
+     permission_classes=[IsAuthenticated]
+     queryset=Product.objects.all()
+     serializer_class=ProductSerializer   
+
+
+class ProductListCreateMixinView(mixins.CreateModelMixin,
+                            mixins.ListModelMixin,
+                            generics.GenericAPIView):
+     authentication_class=[JWTAuthentication]
+     permission_class=[IsAuthenticated]
+     queryset=Product.objects.all()
+     serializer_class=ProductSerializer
+ 
+     def post(self,request):
+          return self.create(request)
+     def get(self,request):
+          return self.list(request)
      
+class ProductDetailMixinView(mixins.RetrieveModelMixin,
+                             mixins.UpdateModelMixin,
+                             mixins.DestroyModelMixin,
+                             generics.GenericAPIView):
      
-class InformationView(APIView):
-    def post(self, request):
-        serializer = InformationSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            user = User.objects.filter(email=email).first()
-            print(user)
+     authentication_class=[JWTAuthentication]
+     permission_class=[IsAuthenticated]
+     queryset=Product.objects.all()
+     serializer_class=ProductSerializer
 
-            if not user:
-                return Response({'msg': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-            user_information = Information.objects.filter(user_key=user)
-            print(user_information)
-
-            if not user_information.exists():
-                return Response({'msg': 'Information not found for this user'}, status=status.HTTP_404_NOT_FOUND)
-
-            
-            information_list = []
-            for info in user_information:
-                print(info)
-                information_list.append({
-                    'is_owner': info.is_owner,
-                    'is_staff': info.is_staff,
-                    'store': info.Store_key.name,
-                     'user':info.user_key.username
-                })
-
-            return Response({'msg': 'Information retrieved successfully', 'data': information_list}, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+     def put(self,request,**kwargs):
+          return self.update(request)
+     
+     def get(self,request,**kwargs):
+          return self.retrieve(request)  
+     
+     def destroy(self, request):
+          return self.destroy(request)
+     
 
 
 
           
+          
+
+                  
+                  
+             
+
+
+               
+
+
+
+
+          
+               
+     

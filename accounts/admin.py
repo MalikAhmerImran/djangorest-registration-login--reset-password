@@ -1,5 +1,5 @@
 from django.contrib import admin
-from accounts.models import User,Store,Information
+from accounts.models import User,Product
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 # Register your models here.
@@ -38,5 +38,5 @@ class UserModelAdmin(BaseUserAdmin):
 
 
 admin.site.register(User, UserModelAdmin)    
-admin.site.register(Store)
-admin.site.register(Information)
+admin.site.register(Product)    
+
